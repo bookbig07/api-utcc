@@ -4,14 +4,13 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const cors = require("cors");
+require("dotenv").config();
 const mongoose = require("mongoose");
 
 mongoose.Promise = global.Promise;
 
 mongoose
-  .connect(
-    "mongodb+srv://pangza2544:QyKdGfbmMzmmzclg@cluster0.8xsbjzj.mongodb.net/"
-  )
+  .connect(process.env.NODE_ENV_MONGODB)
   .then(() => console.log("connection successfully!"))
   .catch((err) => console.error(err));
 
