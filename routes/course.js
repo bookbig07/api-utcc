@@ -49,15 +49,47 @@ router.post("/addCompareSubject", async (req, res) => {
 router.post("/compare", async (req, res) => {
   try {
     const countSubject = Object.values(req.body).length;
-    console.log(Object.values(req.body)[0]);
+    // console.log(Object.values(req.body)[0]);
     let compareSubject = [];
+    let CreditLessThan2 = [];
+
     for (let i = 0; i < countSubject; i++) {
       const findSubjectToCompare = await Course.findOne({
         course_code: Object.values(req.body)[i],
       });
 
       if (findSubjectToCompare) {
-        compareSubject.push(findSubjectToCompare);
+        if (findSubjectToCompare?.course_credit < 3) {
+          CreditLessThan2.push(findSubjectToCompare);
+        } else {
+          if (findSubjectToCompare) {
+            compareSubject.push(findSubjectToCompare);
+          }
+        }
+      }
+    }
+
+    if (CreditLessThan2.length > 0) {
+      let compareSuccess = false;
+      for (let i = 0; i < CreditLessThan2.length; i++) {
+        compareSuccess = false;
+        for (let j = 1; j <= CreditLessThan2.length; j++) {
+          console.log(
+            CreditLessThan2[i]?.course_credit ===
+              CreditLessThan2[j]?.course_credit
+          );
+          if (
+            CreditLessThan2[i]?.course_credit ===
+            CreditLessThan2[j]?.course_credit
+          ) {
+            compareSuccess = true;
+          } else {
+            compareSuccess = false;
+          }
+          if (compareSuccess) {
+            compareSubject.push(CreditLessThan2[i]);
+          }
+        }
       }
     }
     console.log(compareSubject);
