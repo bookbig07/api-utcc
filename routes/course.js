@@ -27,7 +27,7 @@ router.post("/addCompareSubject", async (req, res) => {
       course_code: course_code,
     });
     if (checkSubjectExist) {
-      res.status(400).send("Already have subject");
+      return res.status(400).send({ error: "Already have subject" });
     }
     const addSubject = await Course.create({
       course_code,
@@ -42,7 +42,7 @@ router.post("/addCompareSubject", async (req, res) => {
       res.status(201).send("Created Subject to Compare Success");
     }
   } catch (error) {
-    res.status(403).send({ error: error });
+    return res.status(403).send({ error: error });
   }
 });
 
@@ -51,6 +51,7 @@ router.post("/compare", async (req, res) => {
     const countSubject = Object.values(req.body).length;
     // console.log(Object.values(req.body)[0]);
     let compareSubject = [];
+    let compareDupicate = [];
     let CreditLessThan2 = [];
 
     for (let i = 0; i < countSubject; i++) {
@@ -87,14 +88,17 @@ router.post("/compare", async (req, res) => {
             compareSuccess = false;
           }
           if (compareSuccess) {
-            compareSubject.push(CreditLessThan2[i]);
+            compareDupicate.push(CreditLessThan2[i]);
           }
         }
       }
     }
-    console.log(compareSubject);
+
+    res
+      .status(200)
+      .send({ singleSubject: compareSubject, doubleSubject: compareDupicate });
   } catch (error) {
-    res.status(403).send({ error: error });
+    return res.status(403).send({ error: error });
   }
 });
 
