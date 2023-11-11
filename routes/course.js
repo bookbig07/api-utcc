@@ -49,19 +49,56 @@ router.post("/addCompareSubject", async (req, res) => {
 router.post("/compare", async (req, res) => {
   try {
     const countSubject = Object.values(req.body).length;
-    console.log(Object.values(req.body)[0]);
-    let compareSubject = [];
+
+    let generalSubject = [];
+    let lessThan2 = [];
+    let notCompare = [];
+    let dupicateCompare = [];
     for (let i = 0; i < countSubject; i++) {
       const findSubjectToCompare = await Course.findOne({
         course_code: Object.values(req.body)[i],
       });
 
-      if (findSubjectToCompare) {
-        compareSubject.push(findSubjectToCompare);
+      if (findSubjectToCompare?.course_credit < 3) {
+        lessThan2.push(findSubjectToCompare);
+      } else if (findSubjectToCompare !== null) {
+        generalSubject.push(findSubjectToCompare);
+      } else {
+        notCompare.push({
+          course_code: Object.values(req.body)[i],
+          desc: "รายวิชานี้ไม่สามารถเทียบโอนได้",
+        });
       }
     }
-    console.log(compareSubject);
+
+    if (lessThan2.length > 0) {
+      for (let i = 0; i < lessThan2.length; i++) {
+        let successCompare = false;
+        for (let j = 1; j < lessThan2.length; j++) {
+          if (
+            lessThan2[i].convert_code === lessThan2[j].convert_code &&
+            lessThan2[i].course_code !== lessThan2[j].course_code
+          ) {
+            successCompare = true;
+          }
+        }
+        if (successCompare) {
+          dupicateCompare.push(lessThan2[i]);
+        } else {
+          const cloning = { ...lessThan2[i], desc: "ยังไง" };
+          console.log(cloning);
+          notCompare.push(lessThan2[i]);
+        }
+      }
+    }
+
+    res.status(200).send({
+      general: generalSubject,
+      dupicate: dupicateCompare,
+      notCompare: notCompare,
+    });
   } catch (error) {
+    console.log(error);
     res.status(403).send({ error: error });
   }
 });
