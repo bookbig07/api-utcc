@@ -27,7 +27,7 @@ router.post("/addCompareSubject", async (req, res) => {
       course_code: course_code,
     });
     if (checkSubjectExist) {
-      res.status(400).send("Already have subject");
+      return res.status(400).send("Already have subject");
     }
     const addSubject = await Course.create({
       course_code,
@@ -58,7 +58,6 @@ router.post("/compare", async (req, res) => {
       const findSubjectToCompare = await Course.findOne({
         course_code: Object.values(req.body)[i],
       });
-
       if (findSubjectToCompare?.course_credit < 3) {
         lessThan2.push(findSubjectToCompare);
       } else if (findSubjectToCompare !== null) {
@@ -66,7 +65,7 @@ router.post("/compare", async (req, res) => {
       } else {
         notCompare.push({
           course_code: Object.values(req.body)[i],
-          desc: "รายวิชานี้ไม่สามารถเทียบโอนได้",
+          desc: "รายวิชานี้ไม่มีในข้อมูล",
         });
       }
     }
@@ -85,8 +84,6 @@ router.post("/compare", async (req, res) => {
         if (successCompare) {
           dupicateCompare.push(lessThan2[i]);
         } else {
-          const cloning = { ...lessThan2[i], desc: "ยังไง" };
-          console.log(cloning);
           notCompare.push(lessThan2[i]);
         }
       }
