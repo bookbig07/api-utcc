@@ -89,6 +89,24 @@ router.post("/compare", async (req, res) => {
       }
     }
 
+    let CopygeneralSubject = [...generalSubject];
+    for (let i = 0; i < generalSubject.length; i++) {
+      let successCompare = false;
+      for (let j = 0; j < CopygeneralSubject.length; j++) {
+        if (i !== j && generalSubject[i].convert_code === CopygeneralSubject[j].convert_code) {
+          successCompare = true;
+          break;
+        }
+      }
+      if (successCompare) {
+        dupicateCompare.push(generalSubject[i]);
+      }
+    }
+    generalSubject = generalSubject.filter((item) => {
+      return !dupicateCompare.some((duplicate) => duplicate.convert_code === item.convert_code);
+    });
+
+
     res.status(200).send({
       general: generalSubject,
       dupicate: dupicateCompare,
