@@ -54,6 +54,7 @@ router.post("/compare", async (req, res) => {
     let lessThan2 = [];
     let notCompare = [];
     let dupicateCompare = [];
+
     for (let i = 0; i < countSubject; i++) {
       const findSubjectToCompare = await Course.findOne({
         course_code: Object.values(req.body)[i],
@@ -88,12 +89,6 @@ router.post("/compare", async (req, res) => {
         }
       }
     }
-    const groups = dupicateCompare.reduce((groups, item, index) => {
-      const group = groups[item.convert_code] || [];
-      group.push(item);
-      groups[item.convert_code] = group;
-      return groups;
-    }, {});
 
     let CopygeneralSubject = [...generalSubject];
     for (let i = 0; i < generalSubject.length; i++) {
@@ -102,16 +97,25 @@ router.post("/compare", async (req, res) => {
           i !== j &&
           generalSubject[i].convert_code === CopygeneralSubject[j].convert_code
         ) {
-          dupicateCompare.push({ ...generalSubject[i], ...generalSubject[j] });
+          dupicateCompare.push(generalSubject[i]);
           break;
         }
       }
     }
+
     generalSubject = generalSubject.filter((item) => {
       return !dupicateCompare.some(
         (duplicate) => duplicate.convert_code === item.convert_code
       );
     });
+
+    const groups = dupicateCompare.reduce((groups, item, index) => {
+      const group = groups[item.convert_code] || [];
+      group.push(item);
+      groups[item.convert_code] = group;
+      return groups;
+    }, {});
+
     res.status(200).send({
       general: generalSubject,
       dupicate: [groups],
