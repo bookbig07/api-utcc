@@ -73,7 +73,7 @@ router.post("/compare", async (req, res) => {
     if (lessThan2.length > 0) {
       for (let i = 0; i < lessThan2.length; i++) {
         let successCompare = false;
-        for (let j = 1; j < lessThan2.length; j++) {
+        for (let j = 0; j < lessThan2.length; j++) {
           if (
             lessThan2[i].convert_code === lessThan2[j].convert_code &&
             lessThan2[i].course_code !== lessThan2[j].course_code
@@ -88,28 +88,33 @@ router.post("/compare", async (req, res) => {
         }
       }
     }
+    const groups = dupicateCompare.reduce((groups, item, index) => {
+      const group = groups[item.convert_code] || [];
+      group.push(item);
+      groups[item.convert_code] = group;
+      return groups;
+    }, {});
 
     let CopygeneralSubject = [...generalSubject];
     for (let i = 0; i < generalSubject.length; i++) {
-      let successCompare = false;
       for (let j = 0; j < CopygeneralSubject.length; j++) {
-        if (i !== j && generalSubject[i].convert_code === CopygeneralSubject[j].convert_code) {
-          successCompare = true;
+        if (
+          i !== j &&
+          generalSubject[i].convert_code === CopygeneralSubject[j].convert_code
+        ) {
+          dupicateCompare.push({ ...generalSubject[i], ...generalSubject[j] });
           break;
         }
       }
-      if (successCompare) {
-        dupicateCompare.push(generalSubject[i]);
-      }
     }
     generalSubject = generalSubject.filter((item) => {
-      return !dupicateCompare.some((duplicate) => duplicate.convert_code === item.convert_code);
+      return !dupicateCompare.some(
+        (duplicate) => duplicate.convert_code === item.convert_code
+      );
     });
-
-
     res.status(200).send({
       general: generalSubject,
-      dupicate: dupicateCompare,
+      dupicate: [groups],
       notCompare: notCompare,
     });
   } catch (error) {
