@@ -5,37 +5,40 @@ const Course = require("../models/Course.js");
 router.get("/", async (req, res, next) => {
   try {
     const courses = await Course.find().exec();
-    res.json(courses);
+    res.status(200).send({
+      courses : courses,
+    });
   } catch (error) {
-    next(error);
+    console.log(error);
+    res.status(403).send({ error: error });
   }
 });
 
 router.post("/addCompareSubject", async (req, res) => {
   try {
     const {
-      course_code,
-      course_name,
-      course_credit,
-      convert_code,
-      convert_name,
-      convert_credit,
+      coursecode,
+      coursename,
+      coursecredit,
+      convertcode,
+      convertname,
+      convertcredit,
       category,
     } = req.body;
 
     const checkSubjectExist = await Course.findOne({
-      course_code: course_code,
+      course_code: coursecode,
     });
     if (checkSubjectExist) {
       return res.status(400).send("Already have subject");
     }
     const addSubject = await Course.create({
-      course_code,
-      course_name,
-      course_credit,
-      convert_code,
-      convert_name,
-      convert_credit,
+      coursecode,
+      coursename,
+      coursecredit,
+      convertcode,
+      convertname,
+      convertcredit,
       category,
     });
     if (addSubject) {
@@ -45,6 +48,40 @@ router.post("/addCompareSubject", async (req, res) => {
     res.status(403).send({ error: error });
   }
 });
+
+router.post("/editCompareSubject", async (req, res) => {
+  try {
+    const {
+      coursecode,
+      coursename,
+      coursecredit,
+      convertcode,
+      convertname,
+      convertcredit,
+      category,
+    } = req.body;
+
+    const existingSubject = await Course.findOne({ course_code: coursecode });
+
+    if (!existingSubject) {
+      return res.status(404).send("Subject not found");
+    }
+
+    existingSubject.course_name = coursename;
+    existingSubject.course_credit = coursecredit;
+    existingSubject.convert_code = convertcode;
+    existingSubject.convert_name = convertname;
+    existingSubject.convert_credit = convertcredit;
+    existingSubject.category = category;
+
+    await existingSubject.save();
+
+    res.status(200).send("Subject updated successfully");
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
 
 router.post("/compare", async (req, res) => {
   try {
