@@ -33,12 +33,12 @@ router.post("/addCompareSubject", async (req, res) => {
       return res.status(400).send("Already have subject");
     }
     const addSubject = await Course.create({
-      coursecode,
-      coursename,
-      coursecredit,
-      convertcode,
-      convertname,
-      convertcredit,
+      course_code: coursecode,
+      course_name: coursename,
+      course_credit: coursecredit,
+      convert_code: convertcode,
+      convert_name: convertname,
+      convert_credit: convertcredit,
       category,
     });
     if (addSubject) {
@@ -52,6 +52,7 @@ router.post("/addCompareSubject", async (req, res) => {
 router.post("/editCompareSubject", async (req, res) => {
   try {
     const {
+      indexCourse,
       coursecode,
       coursename,
       coursecredit,
@@ -60,22 +61,18 @@ router.post("/editCompareSubject", async (req, res) => {
       convertcredit,
       category,
     } = req.body;
-
-    const existingSubject = await Course.findOne({ course_code: coursecode });
-
+    const existingSubject = await Course.findOne({ _id: indexCourse });
     if (!existingSubject) {
       return res.status(404).send("Subject not found");
     }
-
+    existingSubject.course_code = coursecode;
     existingSubject.course_name = coursename;
     existingSubject.course_credit = coursecredit;
     existingSubject.convert_code = convertcode;
     existingSubject.convert_name = convertname;
     existingSubject.convert_credit = convertcredit;
     existingSubject.category = category;
-
     await existingSubject.save();
-
     res.status(200).send("Subject updated successfully");
   } catch (error) {
     res.status(500).send({ error: error.message });
@@ -107,7 +104,6 @@ router.post("/compare", async (req, res) => {
         });
       }
     }
-
     if (lessThan2.length > 0) {
       for (let i = 0; i < lessThan2.length; i++) {
         let successCompare = false;
@@ -126,7 +122,6 @@ router.post("/compare", async (req, res) => {
         }
       }
     }
-
     let CopygeneralSubject = [...generalSubject];
     for (let i = 0; i < generalSubject.length; i++) {
       for (let j = 0; j < CopygeneralSubject.length; j++) {
@@ -139,20 +134,17 @@ router.post("/compare", async (req, res) => {
         }
       }
     }
-
     generalSubject = generalSubject.filter((item) => {
       return !dupicateCompare.some(
         (duplicate) => duplicate.convert_code === item.convert_code
       );
     });
-
     const groups = dupicateCompare.reduce((groups, item, index) => {
       const group = groups[item.convert_code] || [];
       group.push(item);
       groups[item.convert_code] = group;
       return groups;
     }, {});
-
     res.status(200).send({
       general: generalSubject,
       dupicate: [groups],
