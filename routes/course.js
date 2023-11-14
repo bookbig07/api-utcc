@@ -49,6 +49,25 @@ router.post("/addCompareSubject", async (req, res) => {
   }
 });
 
+router.delete("/deleteCompareSubject", async (req, res) => {
+  try {
+    const {
+      indexCourse,
+    } = req.body;
+
+    const checkSubjectExist = await Course.findById(indexCourse);
+    if (!checkSubjectExist) {
+      return res.status(404).send("Subject not found");
+    }
+
+    await Course.findByIdAndDelete(indexCourse);
+
+    res.status(200).send("Deleted Subject from Comparison Success");
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
 router.post("/editCompareSubject", async (req, res) => {
   try {
     const {
